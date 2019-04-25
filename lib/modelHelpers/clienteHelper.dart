@@ -33,8 +33,6 @@ class ClienteHelper {
         onCreate: (Database db, int newerVersion) async {
       await db.execute(
           "CREATE TABLE $clienteTable($idCol INTEGER PRIMARY KEY, $nomeCol TEXT, $telCol TEXT, $imgCol TEXT)");
-      await db.execute(
-          "CREATE TABLE $servicoTable($idServicoCol INTEGER PRIMARY KEY, $descricaoCol TEXT, $dataCol TEXT, $precoCol TEXT, FOREIGN KEY (clienteId) REFERENCES $clienteTable($idCol))");
     });
   }
 
@@ -100,6 +98,8 @@ class Cliente {
   String tel;
   String img;
 
+  Cliente();
+
   Cliente.fromMap(Map map) {
     id = map[idCol];
     nome = map[nomeCol];
@@ -113,5 +113,10 @@ class Cliente {
       map[idCol] = id;
     }
     return map;
+  }
+
+  @override
+  String toString() {
+    return "Cliente(id: $id, nome: $nome, tel: $tel, img: $img)";
   }
 }

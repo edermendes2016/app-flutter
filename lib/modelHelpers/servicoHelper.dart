@@ -12,6 +12,7 @@ class Servico {
   String data;
   String preco;
 
+  Servico();
   Servico.fromMap(Map map) {
     idServico = map[idServicoCol];
     descricao = map[descricaoCol];
