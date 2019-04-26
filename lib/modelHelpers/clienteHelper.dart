@@ -1,12 +1,14 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-import './servicoHelper.dart';
 
-final String clienteTable = "clienteTable";
+final String clienteServicoTable = "clienteServicoTable";
 final String idCol = 'idCol';
-final String nomeCol = 'nomeCol';
-final String telCol = 'telCol';
+final String nomeClienteCol = 'nomeClienteCol';
+final String descricaoCol = 'descricaoCol';
 final String imgCol = 'imgCol';
+final String precoCol = 'precoCol';
+final String horaCol = 'horaCol';
+final String dataCol = 'dataCol';
 
 class ClienteHelper {
   static final ClienteHelper _instance = ClienteHelper.internal();
@@ -32,20 +34,21 @@ class ClienteHelper {
     return await openDatabase(path, version: 1,
         onCreate: (Database db, int newerVersion) async {
       await db.execute(
-          "CREATE TABLE $clienteTable($idCol INTEGER PRIMARY KEY, $nomeCol TEXT, $telCol TEXT, $imgCol TEXT)");
+          "CREATE TABLE $clienteServicoTable($idCol INTEGER PRIMARY KEY, $nomeClienteCol TEXT, $descricaoCol TEXT, $imgCol TEXT, $horaCol TEXT, $precoCol DECIMAL(10,2), $dataCol TEXT)");
     });
   }
 
+  
   //metodos
   Future<Cliente> salvaCliente(Cliente cliente) async {
     Database dataBase = await db;
-    cliente.id = await dataBase.insert(clienteTable, cliente.toMap());
+    cliente.id = await dataBase.insert(clienteServicoTable, cliente.toMap());
     return cliente;
   }
 
   Future<List> obterTodos() async {
     Database dataBase = await db;
-    List listMap = await dataBase.rawQuery("SELECT * FROM $clienteTable");
+    List listMap = await dataBase.rawQuery("SELECT * FROM $clienteServicoTable");
     List<Cliente> listCliente = List();
     for (Map c in listMap) {
       listCliente.add(Cliente.fromMap(c));
@@ -55,8 +58,8 @@ class ClienteHelper {
 
   Future<Cliente> obterClienteUnico(int id) async {
     Database dataBase = await db;
-    List<Map> maps = await dataBase.query(clienteTable,
-        columns: [idCol, nomeCol, telCol, imgCol],
+    List<Map> maps = await dataBase.query(clienteServicoTable,
+        columns: [idCol, nomeClienteCol, descricaoCol, imgCol, horaCol, dataCol, precoCol],
         where: "$idCol = ?",
         whereArgs: [id]);
     if (maps.length > 0) {
@@ -69,20 +72,44 @@ class ClienteHelper {
   Future<int> deleteCliente(int id) async {
     Database dataBase = await db;
     return await dataBase
-        .delete(clienteTable, where: "$idCol = ?", whereArgs: [id]);
+        .delete(clienteServicoTable, where: "$idCol = ?", whereArgs: [id]);
   }
 
   Future<int> atualizaCliente(Cliente cliente) async {
     Database dataBase = await db;
-    return await dataBase.update(clienteTable, cliente.toMap(),
+    return await dataBase.update(clienteServicoTable, cliente.toMap(),
         where: "$idCol = ?", whereArgs: [cliente.id]);
   }
+
+  // Calculos despesas
+
+  calculoDespesaMoto(Cliente cliente) {
+    double porcetagem = 100/5;
+    double preco = double.parse(cliente.preco);
+    return preco * porcetagem;
+  }
+  calculoDespesaDecimo(Cliente cliente) {
+    double porcetagem = 100/10;
+    double preco = double.parse(cliente.preco);
+    return preco * porcetagem;
+  }
+  calculoDespesaEquip(Cliente cliente) {
+    double porcetagem = 100/5;
+    double preco = double.parse(cliente.preco);
+    return preco * porcetagem;
+  }
+  calculoDespesaProlabore(Cliente cliente) {
+    double porcetagem = 100/70;
+    double preco = double.parse(cliente.preco);
+    return (preco - calculoDespesaMoto(cliente) - calculoDespesaEquip(cliente) - calculoDespesaDecimo(cliente)) * porcetagem;
+  }
+
 
   //Trazer numero de contatos
   Future<int> numeroClientes() async {
     Database dataBase = await db;
     return Sqflite.firstIntValue(
-        await dataBase.rawQuery("SELECT COUNT(*) FROM $clienteTable"));
+        await dataBase.rawQuery("SELECT COUNT(*) FROM $clienteServicoTable"));
   }
 
   Future close() async {
@@ -95,20 +122,26 @@ class ClienteHelper {
 class Cliente {
   int id;
   String nome;
-  String tel;
+  String descricao;
   String img;
+  String preco;
+  String data;
+  String hora;
 
   Cliente();
 
   Cliente.fromMap(Map map) {
     id = map[idCol];
-    nome = map[nomeCol];
-    tel = map[telCol];
+    nome = map[nomeClienteCol];
+    descricao = map[descricaoCol];
     img = map[imgCol];
+    preco = map[precoCol];
+    data = map[dataCol];
+    hora = map[horaCol];
   }
 
   Map toMap() {
-    Map<String, dynamic> map = {nomeCol: nome, telCol: tel, imgCol: img};
+    Map<String, dynamic> map = {nomeClienteCol: nome, descricaoCol: descricao, imgCol: img, preco: precoCol, data: dataCol, hora: horaCol };
     if (id != null) {
       map[idCol] = id;
     }
@@ -117,6 +150,6 @@ class Cliente {
 
   @override
   String toString() {
-    return "Cliente(id: $id, nome: $nome, tel: $tel, img: $img)";
+    return "Cliente(id: $id, nome: $nome, descricao: $descricao, img: $img, preco: $preco, data: $data, hora: $hora)";
   }
 }

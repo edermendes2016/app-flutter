@@ -1,3 +1,4 @@
+
 import 'package:app_servicos/modelHelpers/clienteHelper.dart';
 import 'package:flutter/material.dart';
 
@@ -9,20 +10,21 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   ClienteHelper helper = ClienteHelper();
 
-  // @override
-  // void initState(){
-  //   super.initState();
+  @override
+  void initState(){
+    super.initState();
 
-  //   Cliente c = Cliente();
-  //   c.nome = "Teste";
-  //   c.tel = "67 9999-9292";
-  //   c.img = "./imgs/imgTeste";
-  //   helper.salvaCliente(c);
+    // Servico c = Servico();
+    // c.descricao = "Teste Descricao";
+    // c.data = "11/08/2019";
+    // c.preco = "299";
+    // c.clienteId = 1;
+    // helper.salvaServico(c);
 
   //  helper.obterTodos().then((list){
   //    print(list);
   //  });
-  // }
+  }
 
   @override
   Widget build(BuildContext context) {
