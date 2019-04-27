@@ -1,4 +1,3 @@
-
 import 'package:app_servicos/modelHelpers/clienteHelper.dart';
 import 'package:flutter/material.dart';
 
@@ -11,19 +10,23 @@ class _HomePageState extends State<HomePage> {
   ClienteHelper helper = ClienteHelper();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
 
-    // Servico c = Servico();
-    // c.descricao = "Teste Descricao";
+    // Cliente c = Cliente();
+    // c.nome = "Teste Prolabore";
+    // c.descricao = "Teste Descricao prolabore";
     // c.data = "11/08/2019";
-    // c.preco = "299";
-    // c.clienteId = 1;
-    // helper.salvaServico(c);
+    // c.img = "img/img.jpg";
+    // c.hora = "2";
+    // c.preco = 70.00;
+   
 
-  //  helper.obterTodos().then((list){
-  //    print(list);
-  //  });
+    // helper.salvaServicoCliente(c);
+
+     helper.obterTodos().then((list){
+       print(list);
+     });
   }
 
   @override

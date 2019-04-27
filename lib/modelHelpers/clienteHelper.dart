@@ -9,13 +9,17 @@ final String imgCol = 'imgCol';
 final String precoCol = 'precoCol';
 final String horaCol = 'horaCol';
 final String dataCol = 'dataCol';
+final String prolaboreCol = 'prolaboreCol';
+final String motoCol = 'motoCol';
+final String equipCol = 'equipCol';
+final String decimoCol = 'decimoCol';
 
 class ClienteHelper {
   static final ClienteHelper _instance = ClienteHelper.internal();
   factory ClienteHelper() => _instance;
   ClienteHelper.internal();
 
-  //banco de dados
+  // Cria o Banco de Dados
   Database _db;
 
   Future<Database> get db async {
@@ -34,32 +38,69 @@ class ClienteHelper {
     return await openDatabase(path, version: 1,
         onCreate: (Database db, int newerVersion) async {
       await db.execute(
-          "CREATE TABLE $clienteServicoTable($idCol INTEGER PRIMARY KEY, $nomeClienteCol TEXT, $descricaoCol TEXT, $imgCol TEXT, $horaCol TEXT, $precoCol DECIMAL(10,2), $dataCol TEXT)");
+          "CREATE TABLE $clienteServicoTable($idCol INTEGER PRIMARY KEY, $nomeClienteCol TEXT, $descricaoCol TEXT, $imgCol TEXT, $horaCol TEXT, $precoCol DOUBLE, $dataCol TEXT,$motoCol DOUBLE, $equipCol DOUBLE, $decimoCol DOUBLE, $prolaboreCol DOUBLE)");
+    
     });
   }
 
-  
-  //metodos
-  Future<Cliente> salvaCliente(Cliente cliente) async {
-    Database dataBase = await db;
+  // Cálculos despesas
+  calculoDespesaMoto(Cliente cliente) {
+    
+  }
+
+  calculoDespesaDecimo(Cliente cliente) {
+    
+  }
+
+  calculoDespesaEquip(Cliente cliente) {
+    
+  }
+
+  calculoDespesaProlabore(Cliente cliente) {
+    
+  }
+
+  calculoLucro(Cliente cliente) {
+    
+  }
+
+// Métodos CRUD
+  Future<Cliente> salvaServicoCliente(Cliente cliente) async {
+    Database dataBase = await db;   
+    cliente.valorDecimo = cliente.preco - 1;
+    cliente.valorProlabore = cliente.preco - 2;
+    cliente.valorMoto = cliente.preco - 3;
+    cliente.varlorEquip = cliente.preco - 4;
+
     cliente.id = await dataBase.insert(clienteServicoTable, cliente.toMap());
+
     return cliente;
   }
 
   Future<List> obterTodos() async {
     Database dataBase = await db;
-    List listMap = await dataBase.rawQuery("SELECT * FROM $clienteServicoTable");
+    List listMap =
+        await dataBase.rawQuery("SELECT * FROM $clienteServicoTable");
     List<Cliente> listCliente = List();
     for (Map c in listMap) {
       listCliente.add(Cliente.fromMap(c));
     }
+
     return listCliente;
-  }
+  }  
 
   Future<Cliente> obterClienteUnico(int id) async {
     Database dataBase = await db;
     List<Map> maps = await dataBase.query(clienteServicoTable,
-        columns: [idCol, nomeClienteCol, descricaoCol, imgCol, horaCol, dataCol, precoCol],
+        columns: [
+          idCol,
+          nomeClienteCol,
+          descricaoCol,
+          imgCol,
+          horaCol,
+          dataCol,
+          precoCol
+        ],
         where: "$idCol = ?",
         whereArgs: [id]);
     if (maps.length > 0) {
@@ -81,31 +122,6 @@ class ClienteHelper {
         where: "$idCol = ?", whereArgs: [cliente.id]);
   }
 
-  // Calculos despesas
-
-  calculoDespesaMoto(Cliente cliente) {
-    double porcetagem = 100/5;
-    double preco = double.parse(cliente.preco);
-    return preco * porcetagem;
-  }
-  calculoDespesaDecimo(Cliente cliente) {
-    double porcetagem = 100/10;
-    double preco = double.parse(cliente.preco);
-    return preco * porcetagem;
-  }
-  calculoDespesaEquip(Cliente cliente) {
-    double porcetagem = 100/5;
-    double preco = double.parse(cliente.preco);
-    return preco * porcetagem;
-  }
-  calculoDespesaProlabore(Cliente cliente) {
-    double porcetagem = 100/70;
-    double preco = double.parse(cliente.preco);
-    return (preco - calculoDespesaMoto(cliente) - calculoDespesaEquip(cliente) - calculoDespesaDecimo(cliente)) * porcetagem;
-  }
-
-
-  //Trazer numero de contatos
   Future<int> numeroClientes() async {
     Database dataBase = await db;
     return Sqflite.firstIntValue(
@@ -118,18 +134,22 @@ class ClienteHelper {
   }
 }
 
-// classe do cliente
+// Classe do Cliente
 class Cliente {
   int id;
   String nome;
   String descricao;
   String img;
-  String preco;
+  double preco;
   String data;
   String hora;
+  double valorProlabore;
+  double valorMoto;
+  double varlorEquip;
+  double valorDecimo;
 
   Cliente();
-
+  
   Cliente.fromMap(Map map) {
     id = map[idCol];
     nome = map[nomeClienteCol];
@@ -138,10 +158,25 @@ class Cliente {
     preco = map[precoCol];
     data = map[dataCol];
     hora = map[horaCol];
+    valorDecimo = map[decimoCol];
+    valorMoto= map[motoCol];
+    valorProlabore = map[prolaboreCol];
+    varlorEquip = map[equipCol];
   }
 
   Map toMap() {
-    Map<String, dynamic> map = {nomeClienteCol: nome, descricaoCol: descricao, imgCol: img, preco: precoCol, data: dataCol, hora: horaCol };
+    Map<String, dynamic> map = {
+      nomeClienteCol: nome,
+      descricaoCol: descricao,
+      imgCol: img,
+      precoCol: preco,
+      dataCol: data,
+      horaCol: hora,
+      prolaboreCol: valorProlabore,
+      motoCol: valorMoto,
+      decimoCol: valorDecimo,
+      equipCol: varlorEquip  
+    };
     if (id != null) {
       map[idCol] = id;
     }
@@ -149,7 +184,7 @@ class Cliente {
   }
 
   @override
-  String toString() {
-    return "Cliente(id: $id, nome: $nome, descricao: $descricao, img: $img, preco: $preco, data: $data, hora: $hora)";
+  String toString() {    
+    return "Serviço(id: $id, nome: $nome, descricao: $descricao, img: $img, preco: $preco, data: $data, hora: $hora, moto: $valorMoto)";
   }
 }
