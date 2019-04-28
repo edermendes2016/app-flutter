@@ -1,7 +1,10 @@
 import 'dart:io';
-
-import 'package:app_servicos/modelHelpers/clienteHelper.dart';
+import 'package:app_servicos/helpers/contact_helper.dart';
+import 'package:app_servicos/ui/contact_page.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+enum OrderOptions { orderaz, orderza }
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,49 +12,62 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  ClienteHelper helper = ClienteHelper();
-  List<Cliente> servicos = List();
+  ContactHelper helper = ContactHelper();
+
+  List<Contact> contacts = List();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
-    helper.obterTodos().then((list) {
-      setState(() {
-        servicos = list;
-      });
-    });
+    _getAllContacts();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text("Serviços"),
-          backgroundColor: Colors.blue,
-          centerTitle: true),
-      backgroundColor: Colors.black,
+        title: Text("Contatos"),
+        backgroundColor: Colors.blue,
+        centerTitle: true,
+        actions: <Widget>[
+          PopupMenuButton<OrderOptions>(
+            itemBuilder: (context) => <PopupMenuEntry<OrderOptions>>[
+                  const PopupMenuItem<OrderOptions>(
+                    child: Text("Ordenar de A-Z"),
+                    value: OrderOptions.orderaz,
+                  ),
+                  const PopupMenuItem<OrderOptions>(
+                    child: Text("Ordenar de Z-A"),
+                    value: OrderOptions.orderza,
+                  ),
+                ],
+            onSelected: _orderList,
+          )
+        ],
+      ),
+      backgroundColor: Colors.grey[700],
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          _showContactPage();
+        },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
       ),
       body: ListView.builder(
-        padding: EdgeInsets.all(10.0),
-        itemCount: servicos.length,
-        itemBuilder: (context, index) {
-          return _servicoCard(context, index);
-        },
-      ),
+          padding: EdgeInsets.all(10.0),
+          itemCount: contacts.length,
+          itemBuilder: (context, index) {
+            return _contactCard(context, index);
+          }),
     );
   }
 
-  Widget _servicoCard(context, index) {
+  Widget _contactCard(BuildContext context, int index) {
     return GestureDetector(
       child: Card(
-        color: Colors.grey[700],
-        child: Padding(
+        color: Colors.blueGrey,
+        child: Padding(          
           padding: EdgeInsets.all(10.0),
           child: Row(
             children: <Widget>[
@@ -61,9 +77,9 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   image: DecorationImage(
-                      image: servicos[index].img != null
-                          ? FileImage(File(servicos[index].img))
-                          : AssetImage("img/img.jpg")),
+                      image: contacts[index].img != null
+                          ? FileImage(File(contacts[index].img))
+                          : AssetImage("images/person.png")),
                 ),
               ),
               Padding(
@@ -72,19 +88,81 @@ class _HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      servicos[index].nome,
+                      contacts[index].name ?? "",
                       style: TextStyle(
-                          fontSize: 22.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
+                          fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     Text(
-                      servicos[index].data,
-                      style: TextStyle(color: Colors.white, fontSize: 17.0),
+                      contacts[index].data ?? "",
+                      style: TextStyle(fontSize: 17.0, color: Colors.white),
                     ),
-                    Text(
-                      servicos[index].preco.toString(),
-                      style: TextStyle(color: Colors.white, fontSize: 17.0),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "Preço: ",
+                          style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        ),
+                        Text(
+                          contacts[index].preco ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                        ),
+                        Text(
+                          "Décimo: ",
+                          style: TextStyle(fontSize: 16.0, color: Colors.white),
+                        ),
+                        Text(
+                          contacts[index].valorDecimo ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "Moto: ",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Text(
+                          contacts[index].valorMoto ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                        ),
+                        Text(
+                          "Equipamentos: ",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Text(
+                          contacts[index].varlorEquip ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: <Widget>[
+                        Text(
+                          "Prolabore: ",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Text(contacts[index].valorProlabore ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(right: 10.0),
+                        ),
+                        Text(
+                          "Hora: ",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                        Text(
+                          contacts[index].hora + " horas" ?? "",
+                          style: TextStyle(fontSize: 18.0, color: Colors.white),
+                        ),
+                      ],
                     )
                   ],
                 ),
@@ -93,6 +171,112 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      onTap: () {
+        _showOptions(context, index);
+      },
     );
+  }
+
+  void _showOptions(BuildContext context, int index) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return BottomSheet(
+            onClosing: () {},
+            builder: (context) {
+              return Container(
+                padding: EdgeInsets.all(10.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: FlatButton(
+                        child: Text(
+                          "Ligar",
+                          style: TextStyle(color: Colors.blue, fontSize: 20.0),
+                        ),
+                        onPressed: () {
+                          launch("tel:${contacts[index].phone}");
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: FlatButton(
+                        child: Text(
+                          "Editar",
+                          style: TextStyle(color: Colors.blue, fontSize: 20.0),
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showContactPage(contact: contacts[index]);
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(10.0),
+                      child: FlatButton(
+                        child: Text(
+                          "Excluir",
+                          style: TextStyle(color: Colors.blue, fontSize: 20.0),
+                        ),
+                        onPressed: () {
+                          helper.deleteContact(contacts[index].id);
+                          setState(() {
+                            contacts.removeAt(index);
+                            Navigator.pop(context);
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        });
+  }
+
+  void _showContactPage({Contact contact}) async {
+    final recContact = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ContactPage(
+                  contact: contact,
+                )));
+    if (recContact != null) {
+      if (contact != null) {
+        await helper.updateContact(recContact);
+      } else {
+        await helper.saveContact(recContact);
+      }
+      _getAllContacts();
+    }
+  }
+
+  void _getAllContacts() {
+    helper.getAllContacts().then((list) {
+      setState(() {
+        contacts = list;
+      });
+    });
+  }
+
+  void _orderList(OrderOptions result) {
+    switch (result) {
+      case OrderOptions.orderaz:
+        contacts.sort((a, b) {
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+        break;
+      case OrderOptions.orderza:
+        contacts.sort((a, b) {
+          return b.name.toLowerCase().compareTo(a.name.toLowerCase());
+        });
+        break;
+    }
+    setState(() {});
   }
 }
