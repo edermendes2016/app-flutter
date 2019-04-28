@@ -38,7 +38,7 @@ class ClienteHelper {
     return await openDatabase(path, version: 1,
         onCreate: (Database db, int newerVersion) async {
       await db.execute(
-          "CREATE TABLE $clienteServicoTable($idCol INTEGER PRIMARY KEY, $nomeClienteCol TEXT, $descricaoCol TEXT, $imgCol TEXT, $horaCol TEXT, $precoCol DOUBLE, $dataCol TEXT,$motoCol DOUBLE, $equipCol DOUBLE, $decimoCol DOUBLE, $prolaboreCol DOUBLE)");
+          "CREATE TABLE $clienteServicoTable($idCol INTEGER PRIMARY KEY, $nomeClienteCol TEXT, $descricaoCol TEXT, $imgCol TEXT, $horaCol TEXT, $precoCol TEXT, $dataCol TEXT,$motoCol DOUBLE, $equipCol DOUBLE, $decimoCol DOUBLE, $prolaboreCol DOUBLE)");
     
     });
   }
@@ -64,13 +64,15 @@ class ClienteHelper {
     
   }
 
+  transformaStringDouble(String valor){
+    double.parse(valor);
+  }
+
 // Métodos CRUD
   Future<Cliente> salvaServicoCliente(Cliente cliente) async {
-    Database dataBase = await db;   
-    cliente.valorDecimo = cliente.preco - 1;
-    cliente.valorProlabore = cliente.preco - 2;
-    cliente.valorMoto = cliente.preco - 3;
-    cliente.varlorEquip = cliente.preco - 4;
+    Database dataBase = await db;
+     
+    // cliente.valorDecimo = transformaStringDouble(cliente.valorDecimo) - 1;
 
     cliente.id = await dataBase.insert(clienteServicoTable, cliente.toMap());
 
@@ -140,13 +142,13 @@ class Cliente {
   String nome;
   String descricao;
   String img;
-  double preco;
+  String preco;
   String data;
   String hora;
-  double valorProlabore;
-  double valorMoto;
-  double varlorEquip;
-  double valorDecimo;
+  String valorProlabore;
+  String valorMoto;
+  String varlorEquip;
+  String valorDecimo;
 
   Cliente();
   
