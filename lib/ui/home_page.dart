@@ -8,29 +8,39 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   ClienteHelper helper = ClienteHelper();
+  List<Cliente> servicos = List();
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
 
-    // Cliente c = Cliente();
-    // c.nome = "Teste Prolabore";
-    // c.descricao = "Teste Descricao prolabore";
-    // c.data = "11/08/2019";
-    // c.img = "img/img.jpg";
-    // c.hora = "2";
-    // c.preco = 70.00;
-   
-
-    // helper.salvaServicoCliente(c);
-
-     helper.obterTodos().then((list){
-       print(list);
-     });
+    helper.obterTodos().then((list){
+      setState(() {
+       servicos = list; 
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Serviços"),
+        backgroundColor: Colors.purpleAccent,
+        centerTitle: true
+      ),
+      backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){},
+        child: Icon(Icons.add),
+        backgroundColor: Colors.purpleAccent[500],
+      ),
+      body: ListView.builder(
+        padding: EdgeInsets.all(10.0),
+        itemCount: servicos.length,
+        itemBuilder: (context, index){},
+      ),
+    );
   }
 }
